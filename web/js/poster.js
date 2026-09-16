@@ -1,9 +1,10 @@
 const BLOCK_SIZES = [40, 24, 16, 10, 6, 4, 2];
 const REVEAL_DURATION = 800;
+const STEP_DURATION = REVEAL_DURATION / BLOCK_SIZES.length;
 
 const buffer = document.createElement('canvas');
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 export async function loadImage(url) {
   const image = new Image();
@@ -15,7 +16,10 @@ export async function loadImage(url) {
 function drawPixelated(canvas, image, blockSize) {
   buffer.width = Math.max(1, Math.round(canvas.width / blockSize));
   buffer.height = Math.max(1, Math.round(canvas.height / blockSize));
-  buffer.getContext('2d').drawImage(image, 0, 0, buffer.width, buffer.height);
+
+  const bufferContext = buffer.getContext('2d');
+  bufferContext.filter = 'url(#posterize)';
+  bufferContext.drawImage(image, 0, 0, buffer.width, buffer.height);
 
   const context = canvas.getContext('2d');
   context.imageSmoothingEnabled = false;
@@ -35,15 +39,15 @@ export async function revealPoster(canvas, image, { animate, signal }) {
   canvas.height = Math.round(canvas.clientHeight * scale);
 
   if (animate) {
-    canvas.classList.add('is-revealing');
     for (const blockSize of BLOCK_SIZES) {
       drawPixelated(canvas, image, blockSize * scale);
-      await wait(REVEAL_DURATION / BLOCK_SIZES.length);
-      if (signal.aborted) {
-        return;
+      const shownAt = await nextFrame();
+      while ((await nextFrame()) - shownAt < STEP_DURATION) {
+        if (signal.aborted) {
+          return;
+        }
       }
     }
-    canvas.classList.remove('is-revealing');
   }
 
   drawSharp(canvas, image);

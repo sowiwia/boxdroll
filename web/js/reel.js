@@ -42,8 +42,9 @@ export function spin(reelElement, { items, winnerIndex }, duration) {
   );
 
   const moveTo = (index) => {
-    reelElement.style.setProperty('--index', index);
+    reelElement.style.transform = `translateY(calc(${1 - index} * var(--row)))`;
   };
+  moveTo(0);
 
   if (duration === 0) {
     moveTo(winnerIndex);

@@ -297,11 +297,9 @@ body::after {
 }
 
 .reel {
-  --index: 0;
   margin: 0;
   padding: 0;
   list-style: none;
-  transform: translateY(calc((1 - var(--index)) * var(--row)));
   will-change: transform;
 }
 
@@ -375,10 +373,6 @@ body::after {
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.poster-canvas.is-revealing {
-  filter: url(#posterize);
 }
 
 @media (min-width: 600px) {

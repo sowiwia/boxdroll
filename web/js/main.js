@@ -78,11 +78,17 @@ async function showPoster(film, imagePromise) {
     return;
   }
 
-  poster.classList.remove('is-loading');
   if (!image) {
     poster.hidden = true;
     return;
   }
+
+  await Promise.all(result.getAnimations().map((animation) => animation.finished)).catch(() => {});
+  if (signal.aborted) {
+    return;
+  }
+
+  poster.classList.remove('is-loading');
   await revealPoster(posterCanvas, image, { animate: !reducedMotion.matches, signal });
 }
 
