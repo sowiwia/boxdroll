@@ -1,18 +1,16 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { ListError, fetchList, resolveListUrl } from './letterboxd.js';
+import { LetterboxdError, fetchList, fetchPosterUrl, resolveListUrl } from './letterboxd.js';
 
-const CACHE_SECONDS = 60 * 60;
+const HOUR = 60 * 60;
+const CACHE_VERSION = 'v2';
 
 const app = new Hono();
 
 app.use('*', (c, next) => cors({ origin: c.env.ALLOWED_ORIGINS.split(',') })(c, next));
 
-app.get('/list', async (c) => {
-  const listUrl = await resolveListUrl(c.req.query('url'));
-  const cacheKey = new Request(
-    `${new URL(c.req.url).origin}/list?url=${encodeURIComponent(listUrl)}`,
-  );
+async function withCache(c, key, maxAge, load) {
+  const cacheKey = new Request(`${new URL(c.req.url).origin}/${CACHE_VERSION}/${key}`);
   const cache = caches.default;
 
   const cached = await cache.match(cacheKey);
@@ -20,18 +18,27 @@ app.get('/list', async (c) => {
     return c.json(await cached.json());
   }
 
-  const list = await fetchList(listUrl);
+  const data = await load();
   c.executionCtx.waitUntil(
-    cache.put(
-      cacheKey,
-      Response.json(list, { headers: { 'Cache-Control': `max-age=${CACHE_SECONDS}` } }),
-    ),
+    cache.put(cacheKey, Response.json(data, { headers: { 'Cache-Control': `max-age=${maxAge}` } })),
   );
-  return c.json(list);
+  return c.json(data);
+}
+
+app.get('/list', async (c) => {
+  const listUrl = await resolveListUrl(c.req.query('url'));
+  return withCache(c, `list?url=${encodeURIComponent(listUrl)}`, HOUR, () => fetchList(listUrl));
+});
+
+app.get('/poster', async (c) => {
+  const slug = c.req.query('film');
+  return withCache(c, `poster?film=${encodeURIComponent(slug)}`, 24 * HOUR, async () => ({
+    url: await fetchPosterUrl(slug),
+  }));
 });
 
 app.onError((err, c) => {
-  if (err instanceof ListError) {
+  if (err instanceof LetterboxdError) {
     return c.json({ error: err.code }, err.status);
   }
   console.error(err);

@@ -330,8 +330,66 @@ body::after {
 .result {
   scroll-margin-bottom: calc(var(--bar) + 1rem);
   display: grid;
-  gap: 0.5rem;
+  justify-items: center;
+  gap: 2rem;
   animation: appear 0.3s steps(3);
+}
+
+.result-info {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.poster {
+  --line: var(--white);
+  position: relative;
+  display: block;
+  width: clamp(8rem, 40vw, 10rem);
+  aspect-ratio: 2 / 3;
+  margin: 4px;
+  background: var(--dark-gray);
+  box-shadow:
+    0 -4px var(--line),
+    0 4px var(--line),
+    -4px 0 var(--line),
+    4px 0 var(--line),
+    12px 12px var(--dark-gray);
+}
+
+.poster:hover {
+  --line: var(--green);
+}
+
+.poster.is-loading::after {
+  content: '...';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--gray);
+  animation: blink 0.8s steps(1) infinite;
+}
+
+.poster-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.poster-canvas.is-revealing {
+  filter: url(#posterize);
+}
+
+@media (min-width: 600px) {
+  .result:has(.poster:not([hidden])) {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    text-align: left;
+  }
+
+  .result:has(.poster:not([hidden])) .result-actions {
+    justify-content: flex-start;
+  }
 }
 
 .result-title {
@@ -387,6 +445,7 @@ body::after {
   width: 14px;
   height: 12px;
   fill: var(--pink);
+  animation: heartbeat 2.4s steps(1) infinite;
 }
 
 .visually-hidden {
@@ -396,6 +455,24 @@ body::after {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+@keyframes heartbeat {
+  8%,
+  24% {
+    scale: 1.3;
+  }
+
+  16%,
+  32% {
+    scale: 1;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 @keyframes dots {

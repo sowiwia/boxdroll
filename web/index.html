@@ -50,25 +50,38 @@
       </section>
 
       <section class="result" id="result" aria-live="polite" hidden>
-        <p class="result-title" id="result-title"></p>
-        <p class="result-meta">
-          <span id="result-year"></span>
-          <span data-i18n="from">from</span>
-          <span id="result-list"></span>
-        </p>
-        <div class="result-actions">
-          <a
-            class="link"
-            id="result-link"
-            target="_blank"
-            rel="noopener"
-            data-i18n="viewOnLetterboxd"
-          >
-            view on letterboxd
-          </a>
-          <button class="button button-small" id="reroll" type="button" data-i18n="reroll">
-            reroll
-          </button>
+        <a
+          class="poster"
+          id="poster"
+          target="_blank"
+          rel="noopener"
+          tabindex="-1"
+          aria-hidden="true"
+          hidden
+        >
+          <canvas class="poster-canvas" id="poster-canvas"></canvas>
+        </a>
+        <div class="result-info">
+          <p class="result-title" id="result-title"></p>
+          <p class="result-meta">
+            <span id="result-year"></span>
+            <span data-i18n="from">from</span>
+            <span id="result-list"></span>
+          </p>
+          <div class="result-actions">
+            <a
+              class="link"
+              id="result-link"
+              target="_blank"
+              rel="noopener"
+              data-i18n="viewOnLetterboxd"
+            >
+              view on letterboxd
+            </a>
+            <button class="button button-small" id="reroll" type="button" data-i18n="reroll">
+              reroll
+            </button>
+          </div>
         </div>
       </section>
     </main>
@@ -96,5 +109,15 @@
         cafecito
       </a>
     </footer>
+
+    <svg class="visually-hidden" aria-hidden="true">
+      <filter id="posterize">
+        <feComponentTransfer>
+          <feFuncR type="discrete" tableValues="0 0.33 0.67 1" />
+          <feFuncG type="discrete" tableValues="0 0.33 0.67 1" />
+          <feFuncB type="discrete" tableValues="0 0.33 0.67 1" />
+        </feComponentTransfer>
+      </filter>
+    </svg>
   </body>
 </html>

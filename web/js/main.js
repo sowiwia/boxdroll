@@ -1,6 +1,7 @@
 import confetti from '../vendor/canvas-confetti.mjs';
-import { fetchList } from './api.js';
+import { fetchList, fetchPosterUrl } from './api.js';
 import { getLanguage, languages, setLanguage, t, translatePage } from './i18n.js';
+import { loadImage, revealPoster } from './poster.js';
 import { buildReel, pickRandom, spin } from './reel.js';
 
 const SPIN_DURATION = 3500;
@@ -16,6 +17,8 @@ const resultTitle = document.querySelector('#result-title');
 const resultYear = document.querySelector('#result-year');
 const resultList = document.querySelector('#result-list');
 const resultLink = document.querySelector('#result-link');
+const poster = document.querySelector('#poster');
+const posterCanvas = document.querySelector('#poster-canvas');
 const rerollButton = document.querySelector('#reroll');
 const languageToggle = document.querySelector('#lang-toggle');
 
@@ -24,6 +27,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let list = null;
 let loadedUrl = '';
 let isBusy = false;
+let posterReveal = new AbortController();
 
 function setBusy(busy) {
   isBusy = busy;
@@ -52,6 +56,35 @@ function showResult(film) {
   result.hidden = false;
 }
 
+async function loadPoster(film) {
+  try {
+    const url = film.slug && (await fetchPosterUrl(film.slug));
+    return url ? await loadImage(url) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function showPoster(film, imagePromise) {
+  const { signal } = posterReveal;
+
+  poster.href = film.url;
+  poster.hidden = false;
+  poster.classList.add('is-loading');
+
+  const image = await imagePromise;
+  if (signal.aborted) {
+    return;
+  }
+
+  poster.classList.remove('is-loading');
+  if (!image) {
+    poster.hidden = true;
+    return;
+  }
+  await revealPoster(posterCanvas, image, { animate: !reducedMotion.matches, signal });
+}
+
 function celebrate() {
   const { top, height } = machine.getBoundingClientRect();
   confetti({
@@ -70,7 +103,12 @@ function celebrate() {
 
 async function roll() {
   const winner = pickRandom(list.films);
+  const posterImage = loadPoster(winner);
   const scrollBehavior = reducedMotion.matches ? 'auto' : 'smooth';
+
+  posterReveal.abort();
+  posterReveal = new AbortController();
+  posterCanvas.getContext('2d').clearRect(0, 0, posterCanvas.width, posterCanvas.height);
 
   result.hidden = true;
   machine.hidden = false;
@@ -83,6 +121,7 @@ async function roll() {
   document.body.classList.remove('is-rolling');
   machine.classList.add('is-winner');
   showResult(winner);
+  showPoster(winner, posterImage);
   result.scrollIntoView({ block: 'nearest', behavior: scrollBehavior });
   celebrate();
 }

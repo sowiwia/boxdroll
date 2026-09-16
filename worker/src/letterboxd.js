@@ -12,8 +12,11 @@ const LIST_PATH = /^\/([\w-]+)\/list\/([\w-]+)/;
 const SHORT_LINK = /^(https?:\/\/)?boxd\.it\//i;
 const NAME_WITH_YEAR = /^(.*) \((\d{4})\)$/;
 const PAGE_LINK = /\/page\/(\d+)\/?$/;
+const FILM_LINK = /^\/film\/([a-z0-9-]+)\/$/;
+const FILM_SLUG = /^[a-z0-9-]+$/;
+const CDATA_COMMENT = /\/\*.*?\*\//g;
 
-export class ListError extends Error {
+export class LetterboxdError extends Error {
   constructor(code, status) {
     super(code);
     this.code = code;
@@ -25,7 +28,7 @@ function toUrl(input) {
   try {
     return new URL(input.includes('://') ? input : `https://${input}`);
   } catch {
-    throw new ListError('invalid_url', 400);
+    throw new LetterboxdError('invalid_url', 400);
   }
 }
 
@@ -35,7 +38,7 @@ export function normalizeListUrl(input) {
   const match = url.pathname.match(LIST_PATH);
 
   if (host !== 'letterboxd.com' || !match) {
-    throw new ListError('invalid_url', 400);
+    throw new LetterboxdError('invalid_url', 400);
   }
 
   const [, user, slug] = match;
@@ -51,7 +54,7 @@ export async function resolveListUrl(input = '') {
   const response = await fetch(toUrl(trimmed), { redirect: 'manual' });
   const location = response.headers.get('Location');
   if (!location) {
-    throw new ListError('invalid_url', 400);
+    throw new LetterboxdError('invalid_url', 400);
   }
   return normalizeListUrl(location);
 }
@@ -62,6 +65,7 @@ function toFilm(rawName, link) {
   return {
     title: match ? match[1] : name,
     year: match ? Number(match[2]) : null,
+    slug: link.match(FILM_LINK)?.[1] ?? null,
     url: new URL(link, BASE_URL).href,
   };
 }
@@ -105,17 +109,21 @@ export function choosePages(lastPage, limit = MAX_PAGES) {
   return pages.slice(0, limit - 1);
 }
 
-async function fetchPage(listUrl, pageNumber) {
-  const url = pageNumber === 1 ? listUrl : `${listUrl}page/${pageNumber}/`;
+async function fetchLetterboxd(url) {
   const response = await fetch(url, { headers: REQUEST_HEADERS });
 
   if (response.status === 404) {
-    throw new ListError('not_found', 404);
+    throw new LetterboxdError('not_found', 404);
   }
   if (!response.ok) {
-    throw new ListError('upstream', 502);
+    throw new LetterboxdError('upstream', 502);
   }
-  return parseListPage(response);
+  return response;
+}
+
+async function fetchPage(listUrl, pageNumber) {
+  const url = pageNumber === 1 ? listUrl : `${listUrl}page/${pageNumber}/`;
+  return parseListPage(await fetchLetterboxd(url));
 }
 
 export async function fetchList(listUrl) {
@@ -126,8 +134,34 @@ export async function fetchList(listUrl) {
 
   const films = [firstPage, ...otherPages].flatMap((page) => page.films);
   if (films.length === 0) {
-    throw new ListError('empty', 422);
+    throw new LetterboxdError('empty', 422);
   }
 
   return { name: firstPage.name, url: listUrl, films };
+}
+
+export async function parsePosterUrl(response) {
+  let structuredData = '';
+
+  await new HTMLRewriter()
+    .on('script[type="application/ld+json"]', {
+      text({ text }) {
+        structuredData += text;
+      },
+    })
+    .transform(response)
+    .arrayBuffer();
+
+  try {
+    return JSON.parse(structuredData.replace(CDATA_COMMENT, '')).image ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPosterUrl(slug = '') {
+  if (!FILM_SLUG.test(slug)) {
+    throw new LetterboxdError('invalid_film', 400);
+  }
+  return parsePosterUrl(await fetchLetterboxd(`${BASE_URL}/film/${slug}/`));
 }

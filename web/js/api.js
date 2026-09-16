@@ -21,3 +21,12 @@ export async function fetchList(listUrl) {
   }
   return body;
 }
+
+export async function fetchPosterUrl(slug) {
+  const response = await fetch(`${API_URL}/poster?film=${encodeURIComponent(slug)}`);
+  if (!response.ok) {
+    return null;
+  }
+  const { url } = await response.json();
+  return url;
+}
