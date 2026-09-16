@@ -1,6 +1,5 @@
 import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/+esm';
 import { fetchList } from './api.js';
-import { SUPPORT_LINKS } from './config.js';
 import { getLanguage, languages, setLanguage, t, translatePage } from './i18n.js';
 import { buildReel, pickRandom, spin } from './reel.js';
 
@@ -19,7 +18,6 @@ const resultList = document.querySelector('#result-list');
 const resultLink = document.querySelector('#result-link');
 const rerollButton = document.querySelector('#reroll');
 const languageToggle = document.querySelector('#lang-toggle');
-const supportLink = document.querySelector('#support-link');
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -124,7 +122,6 @@ function getNextLanguage() {
 }
 
 function renderLanguage() {
-  const language = getLanguage();
   const nextLanguage = getNextLanguage();
 
   translatePage();
@@ -133,8 +130,6 @@ function renderLanguage() {
     'aria-label',
     nextLanguage === 'es' ? 'Cambiar a español' : 'Switch to English',
   );
-  supportLink.textContent = SUPPORT_LINKS[language].label;
-  supportLink.href = SUPPORT_LINKS[language].url;
 }
 
 form.addEventListener('submit', handleSubmit);
