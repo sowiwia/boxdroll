@@ -2,7 +2,8 @@ import confetti from '../vendor/canvas-confetti.mjs';
 import { fetchList, fetchPosterUrl } from './api.js';
 import { getLanguage, languages, setLanguage, t, translatePage } from './i18n.js';
 import { loadImage, revealPoster } from './poster.js';
-import { buildReel, pickRandom, spin } from './reel.js';
+import { pickRandom } from './random.js';
+import { buildReel, labelFilms, spin } from './reel.js';
 
 const SPIN_DURATION = 3500;
 const LETTERBOXD_COLORS = ['#ff8000', '#00e054', '#40bcf4'];
@@ -138,7 +139,8 @@ async function handleSubmit(event) {
   try {
     if (listUrl !== loadedUrl) {
       setStatus('loading', { loading: true });
-      list = await fetchList(listUrl);
+      const data = await fetchList(listUrl);
+      list = { ...data, films: labelFilms(data.films) };
       loadedUrl = listUrl;
     }
     setStatus(null);

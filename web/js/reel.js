@@ -1,14 +1,29 @@
+import { shuffle } from './random.js';
+
 const REEL_LENGTH = 40;
 
 const easeOutCubic = (progress) => 1 - (1 - progress) ** 3;
 
-export function pickRandom(items) {
-  return items[Math.floor(Math.random() * items.length)];
+export function labelFilms(films) {
+  const titleCounts = new Map();
+  for (const { title } of films) {
+    titleCounts.set(title, (titleCounts.get(title) ?? 0) + 1);
+  }
+
+  return films.map((film) => ({
+    ...film,
+    label:
+      titleCounts.get(film.title) > 1 && film.year ? `${film.title} (${film.year})` : film.title,
+  }));
 }
 
 export function buildReel(films, winner) {
-  const fillers = Array.from({ length: REEL_LENGTH }, () => pickRandom(films));
-  return { items: [...fillers, winner, pickRandom(films)], winnerIndex: REEL_LENGTH };
+  const others = films.filter((film) => film !== winner);
+  const pool = others.length > 0 ? shuffle(others) : [winner];
+  const fillerAt = (index) => pool[index % pool.length];
+
+  const fillers = Array.from({ length: REEL_LENGTH }, (_, index) => fillerAt(index));
+  return { items: [...fillers, winner, fillerAt(REEL_LENGTH)], winnerIndex: REEL_LENGTH };
 }
 
 function createItem(title) {
@@ -20,7 +35,7 @@ function createItem(title) {
 export function spin(reelElement, { items, winnerIndex }, duration) {
   reelElement.replaceChildren(
     ...items.map((film, index) => {
-      const item = createItem(film.title);
+      const item = createItem(film.label);
       item.classList.toggle('is-winner', index === winnerIndex);
       return item;
     }),
