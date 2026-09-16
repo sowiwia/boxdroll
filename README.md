@@ -1,7 +1,7 @@
 <h1 align="center">⋆˙⟡ boxdroll ⟡˙⋆</h1>
 
 <p align="center">
-paste a letterboxd list. let fate pick.
+what are we watching tonight?
 </p>
 
 <p align="center">

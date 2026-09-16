@@ -2,7 +2,7 @@ const STORAGE_KEY = 'boxdroll:language';
 
 const messages = {
   en: {
-    tagline: 'paste a letterboxd list. let fate pick.',
+    tagline: 'what are we watching tonight?',
     inputLabel: 'Letterboxd list URL',
     roll: 'roll',
     reroll: 'reroll',
@@ -17,7 +17,7 @@ const messages = {
     'error.unknown': 'something went wrong. try again',
   },
   es: {
-    tagline: 'pega una lista de letterboxd. que decida el destino.',
+    tagline: '¿qué vemos hoy?',
     inputLabel: 'URL de la lista de Letterboxd',
     roll: 'tirar',
     reroll: 'otra',

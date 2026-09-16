@@ -63,6 +63,10 @@ body::after {
   z-index: 10;
 }
 
+.letterbox {
+  position: fixed;
+}
+
 .letterbox::before,
 .letterbox::after {
   content: '';
@@ -262,6 +266,16 @@ body::after {
   text-overflow: ellipsis;
 }
 
+.machine.is-idle .reel {
+  --index: 1;
+  color: var(--gray);
+}
+
+.machine.is-idle .reel li:nth-child(2) {
+  color: var(--white);
+  animation: blink 1s steps(1) infinite;
+}
+
 .machine.is-winner {
   --line: var(--green);
   animation: flash 0.5s steps(1) 2;
@@ -317,6 +331,12 @@ body::after {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 @keyframes dots {
