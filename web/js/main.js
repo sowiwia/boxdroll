@@ -128,7 +128,9 @@ function renderLanguage() {
   const nextLanguage = getNextLanguage();
 
   translatePage();
-  languageToggle.textContent = nextLanguage;
+  for (const option of languageToggle.children) {
+    option.classList.toggle('is-active', option.dataset.lang === getLanguage());
+  }
   languageToggle.setAttribute(
     'aria-label',
     nextLanguage === 'es' ? 'Cambiar a español' : 'Switch to English',

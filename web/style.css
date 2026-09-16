@@ -12,6 +12,7 @@
   --orange: #ff8000;
   --green: #00e054;
   --blue: #40bcf4;
+  --pink: #ff7eb9;
   --row: 3rem;
   --bar: 3rem;
   --bar-rolling: 14vh;
@@ -19,8 +20,8 @@
 
 @media (max-width: 600px), (max-height: 700px) {
   :root {
-    --bar: 1.5rem;
-    --bar-rolling: 2.5rem;
+    --bar: 2rem;
+    --bar-rolling: 3rem;
   }
 }
 
@@ -357,12 +358,63 @@ body::after {
 .corner {
   position: fixed;
   right: 1rem;
-  bottom: 0.75rem;
+  bottom: 0;
+  height: var(--bar);
   display: flex;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 1.25rem;
   font-size: 0.75rem;
   text-transform: uppercase;
   z-index: 6;
+}
+
+.lang-toggle {
+  display: flex;
+  padding: 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--dark-gray);
+}
+
+.lang-toggle span {
+  padding: 0 0.4rem;
+  color: var(--gray);
+}
+
+.lang-toggle span.is-active {
+  background: var(--white);
+  color: var(--black);
+}
+
+.lang-toggle:hover span:not(.is-active),
+.lang-toggle:focus-visible span:not(.is-active) {
+  color: var(--blue);
+}
+
+.lang-toggle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.support-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.support-link:hover,
+.support-link:focus-visible {
+  color: var(--pink);
+}
+
+.heart {
+  width: 14px;
+  height: 12px;
+  fill: var(--pink);
+  animation: heartbeat 2.4s steps(1) infinite;
 }
 
 .visually-hidden {
@@ -372,6 +424,18 @@ body::after {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+@keyframes heartbeat {
+  8%,
+  24% {
+    scale: 1.3;
+  }
+
+  16%,
+  32% {
+    scale: 1;
+  }
 }
 
 @keyframes dots {
