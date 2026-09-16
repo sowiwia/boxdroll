@@ -368,35 +368,8 @@ body::after {
   z-index: 6;
 }
 
-.lang-toggle {
-  display: flex;
-  padding: 2px;
-  border: 0;
-  background: none;
-  font: inherit;
-  text-transform: inherit;
-  cursor: pointer;
-  box-shadow: inset 0 0 0 2px var(--dark-gray);
-}
-
-.lang-toggle span {
-  padding: 0 0.4rem;
-  color: var(--gray);
-}
-
-.lang-toggle span.is-active {
-  background: var(--white);
-  color: var(--black);
-}
-
-.lang-toggle:hover span:not(.is-active),
-.lang-toggle:focus-visible span:not(.is-active) {
-  color: var(--blue);
-}
-
-.lang-toggle:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--blue);
+.lang-toggle .is-active {
+  color: var(--white);
 }
 
 .support-link {
@@ -414,7 +387,6 @@ body::after {
   width: 14px;
   height: 12px;
   fill: var(--pink);
-  animation: heartbeat 2.4s steps(1) infinite;
 }
 
 .visually-hidden {
@@ -424,18 +396,6 @@ body::after {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-@keyframes heartbeat {
-  8%,
-  24% {
-    scale: 1.3;
-  }
-
-  16%,
-  32% {
-    scale: 1;
-  }
 }
 
 @keyframes dots {

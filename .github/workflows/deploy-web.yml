@@ -24,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Bust caches with the commit hash
+        run: |
+          version=${GITHUB_SHA::7}
+          sed -i -E "s/\.(css|js|mjs)([\"'])/.\1?v=$version\2/g" web/index.html web/js/*.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web
