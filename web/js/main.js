@@ -70,17 +70,20 @@ function celebrate() {
 
 async function roll() {
   const winner = pickRandom(list.films);
+  const scrollBehavior = reducedMotion.matches ? 'auto' : 'smooth';
 
   result.hidden = true;
   machine.hidden = false;
   machine.classList.remove('is-winner');
   document.body.classList.add('is-rolling');
+  machine.scrollIntoView({ block: 'center', behavior: scrollBehavior });
 
   await spin(reel, buildReel(list.films, winner), reducedMotion.matches ? 0 : SPIN_DURATION);
 
   document.body.classList.remove('is-rolling');
   machine.classList.add('is-winner');
   showResult(winner);
+  result.scrollIntoView({ block: 'nearest', behavior: scrollBehavior });
   celebrate();
 }
 

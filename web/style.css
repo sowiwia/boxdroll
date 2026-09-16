@@ -13,6 +13,15 @@
   --green: #00e054;
   --blue: #40bcf4;
   --row: 3rem;
+  --bar: 3rem;
+  --bar-rolling: 14vh;
+}
+
+@media (max-width: 600px), (max-height: 700px) {
+  :root {
+    --bar: 1.5rem;
+    --bar-rolling: 2.5rem;
+  }
 }
 
 *,
@@ -60,7 +69,7 @@ body::after {
   position: fixed;
   left: 0;
   right: 0;
-  height: 3rem;
+  height: var(--bar);
   background: var(--black);
   border-color: var(--dark-gray);
   border-style: solid;
@@ -81,7 +90,7 @@ body::after {
 
 .is-rolling .letterbox::before,
 .is-rolling .letterbox::after {
-  height: 18vh;
+  height: var(--bar-rolling);
 }
 
 .app {
@@ -263,6 +272,7 @@ body::after {
 }
 
 .result {
+  scroll-margin-bottom: calc(var(--bar) + 1rem);
   display: grid;
   gap: 0.5rem;
   animation: appear 0.3s steps(3);
