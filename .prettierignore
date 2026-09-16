@@ -1,3 +1,4 @@
 package-lock.json
 web/fonts
+web/vendor
 .wrangler

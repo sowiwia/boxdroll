@@ -11,6 +11,7 @@ const REQUEST_HEADERS = {
 const LIST_PATH = /^\/([\w-]+)\/list\/([\w-]+)/;
 const SHORT_LINK = /^(https?:\/\/)?boxd\.it\//i;
 const NAME_WITH_YEAR = /^(.*) \((\d{4})\)$/;
+const PAGE_LINK = /\/page\/(\d+)\/?$/;
 
 export class ListError extends Error {
   constructor(code, status) {
@@ -82,14 +83,26 @@ export async function parseListPage(response) {
       },
     })
     .on('.paginate-page a', {
-      text({ text }) {
-        page.lastPage = Math.max(page.lastPage, Number(text) || 0);
+      element(el) {
+        const match = el.getAttribute('href')?.match(PAGE_LINK);
+        if (match) {
+          page.lastPage = Math.max(page.lastPage, Number(match[1]));
+        }
       },
     })
     .transform(response)
     .arrayBuffer();
 
   return page;
+}
+
+export function choosePages(lastPage, limit = MAX_PAGES) {
+  const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+  for (let i = pages.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pages[i], pages[j]] = [pages[j], pages[i]];
+  }
+  return pages.slice(0, limit - 1);
 }
 
 async function fetchPage(listUrl, pageNumber) {
@@ -107,9 +120,8 @@ async function fetchPage(listUrl, pageNumber) {
 
 export async function fetchList(listUrl) {
   const firstPage = await fetchPage(listUrl, 1);
-  const pageCount = Math.min(firstPage.lastPage, MAX_PAGES);
   const otherPages = await Promise.all(
-    Array.from({ length: pageCount - 1 }, (_, i) => fetchPage(listUrl, i + 2)),
+    choosePages(firstPage.lastPage).map((pageNumber) => fetchPage(listUrl, pageNumber)),
   );
 
   const films = [firstPage, ...otherPages].flatMap((page) => page.films);

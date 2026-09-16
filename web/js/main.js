@@ -1,4 +1,4 @@
-import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/+esm';
+import confetti from '../vendor/canvas-confetti.mjs';
 import { fetchList } from './api.js';
 import { getLanguage, languages, setLanguage, t, translatePage } from './i18n.js';
 import { buildReel, pickRandom, spin } from './reel.js';

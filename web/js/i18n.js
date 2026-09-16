@@ -37,8 +37,24 @@ export const languages = Object.keys(messages);
 
 let currentLanguage = detectLanguage();
 
+function readSavedLanguage() {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveLanguage(language) {
+  try {
+    saveLanguage(language);
+  } catch {
+    // Storage is blocked in some private modes; the choice just won't persist.
+  }
+}
+
 function detectLanguage() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = readSavedLanguage();
   if (languages.includes(saved)) {
     return saved;
   }
@@ -55,7 +71,7 @@ export function t(key) {
 
 export function setLanguage(language) {
   currentLanguage = language;
-  localStorage.setItem(STORAGE_KEY, language);
+  saveLanguage(language);
   translatePage();
 }
 
