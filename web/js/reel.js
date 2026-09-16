@@ -17,13 +17,13 @@ export function labelFilms(films) {
   }));
 }
 
-export function buildReel(films, winner) {
+export function buildReel(films, winner, length = REEL_LENGTH) {
   const others = films.filter((film) => film !== winner);
   const pool = others.length > 0 ? shuffle(others) : [winner];
   const fillerAt = (index) => pool[index % pool.length];
 
-  const fillers = Array.from({ length: REEL_LENGTH }, (_, index) => fillerAt(index));
-  return { items: [...fillers, winner, fillerAt(REEL_LENGTH)], winnerIndex: REEL_LENGTH };
+  const fillers = Array.from({ length }, (_, index) => fillerAt(index));
+  return { items: [...fillers, winner, fillerAt(length)], winnerIndex: length };
 }
 
 function createItem(title) {
@@ -45,11 +45,6 @@ export function spin(reelElement, { items, winnerIndex }, duration) {
     reelElement.style.transform = `translateY(calc(${1 - index} * var(--row)))`;
   };
   moveTo(0);
-
-  if (duration === 0) {
-    moveTo(winnerIndex);
-    return Promise.resolve();
-  }
 
   return new Promise((resolve) => {
     const start = performance.now();

@@ -23,8 +23,6 @@ const posterCanvas = document.querySelector('#poster-canvas');
 const rerollButton = document.querySelector('#reroll');
 const languageToggle = document.querySelector('#lang-toggle');
 
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
 let list = null;
 let loadedUrl = '';
 let isBusy = false;
@@ -89,7 +87,7 @@ async function showPoster(film, imagePromise) {
   }
 
   poster.classList.remove('is-loading');
-  await revealPoster(posterCanvas, image, { animate: !reducedMotion.matches, signal });
+  await revealPoster(posterCanvas, image, { signal });
 }
 
 function celebrate() {
@@ -104,14 +102,12 @@ function celebrate() {
     shapes: ['square'],
     scalar: 0.9,
     flat: true,
-    disableForReducedMotion: true,
   });
 }
 
 async function roll() {
   const winner = pickRandom(list.films);
   const posterImage = loadPoster(winner);
-  const scrollBehavior = reducedMotion.matches ? 'auto' : 'smooth';
 
   posterReveal.abort();
   posterReveal = new AbortController();
@@ -121,15 +117,15 @@ async function roll() {
   machine.hidden = false;
   machine.classList.remove('is-winner');
   document.body.classList.add('is-rolling');
-  machine.scrollIntoView({ block: 'center', behavior: scrollBehavior });
+  machine.scrollIntoView({ block: 'center', behavior: 'smooth' });
 
-  await spin(reel, buildReel(list.films, winner), reducedMotion.matches ? 0 : SPIN_DURATION);
+  await spin(reel, buildReel(list.films, winner), SPIN_DURATION);
 
   document.body.classList.remove('is-rolling');
   machine.classList.add('is-winner');
   showResult(winner);
   showPoster(winner, posterImage);
-  result.scrollIntoView({ block: 'nearest', behavior: scrollBehavior });
+  result.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   celebrate();
 }
 

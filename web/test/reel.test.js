@@ -6,7 +6,7 @@ const makeFilms = (count) => Array.from({ length: count }, (_, i) => ({ title: `
 describe('buildReel', () => {
   it('never repeats a film when the list is long enough', () => {
     const films = makeFilms(500);
-    const { items, winnerIndex } = buildReel(films, films[42]);
+    const { items, winnerIndex } = buildReel(films, films[42], 40);
 
     expect(items[winnerIndex]).toBe(films[42]);
     expect(new Set(items).size).toBe(items.length);
@@ -14,21 +14,21 @@ describe('buildReel', () => {
 
   it('shows the winner only once', () => {
     const films = makeFilms(10);
-    const { items } = buildReel(films, films[3]);
+    const { items } = buildReel(films, films[3], 40);
 
     expect(items.filter((film) => film === films[3])).toHaveLength(1);
   });
 
   it('never shows the same film twice in a row on short lists', () => {
     const films = makeFilms(3);
-    const { items } = buildReel(films, films[0]);
+    const { items } = buildReel(films, films[0], 40);
 
     items.slice(1).forEach((film, i) => expect(film).not.toBe(items[i]));
   });
 
   it('works with a single film', () => {
     const films = makeFilms(1);
-    const { items, winnerIndex } = buildReel(films, films[0]);
+    const { items, winnerIndex } = buildReel(films, films[0], 40);
 
     expect(items[winnerIndex]).toBe(films[0]);
   });
