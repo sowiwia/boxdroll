@@ -1,5 +1,5 @@
-const BLOCK_SIZES = [48, 32, 24, 16, 12, 8, 6, 4, 3, 2];
-const STEP_DURATION = 110;
+const BLOCK_SIZES = [40, 24, 16, 10, 6, 4, 2];
+const STEP_DURATION = 80;
 
 const buffer = document.createElement('canvas');
 
