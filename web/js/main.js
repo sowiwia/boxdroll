@@ -73,7 +73,8 @@ async function roll() {
   const scrollBehavior = reducedMotion.matches ? 'auto' : 'smooth';
 
   result.hidden = true;
-  machine.classList.remove('is-idle', 'is-winner');
+  machine.hidden = false;
+  machine.classList.remove('is-winner');
   document.body.classList.add('is-rolling');
   machine.scrollIntoView({ block: 'center', behavior: scrollBehavior });
 
@@ -105,6 +106,8 @@ async function handleSubmit(event) {
     await roll();
   } catch (error) {
     loadedUrl = '';
+    machine.hidden = true;
+    result.hidden = true;
     setStatus(t(`error.${error.code}`) ? `error.${error.code}` : 'error.unknown');
   } finally {
     setBusy(false);

@@ -241,12 +241,58 @@ body::after {
   pointer-events: none;
 }
 
-.machine::after {
-  content: '';
+.payline {
   position: absolute;
   inset: var(--row) 0;
   border-block: 2px solid var(--dark-gray);
   pointer-events: none;
+}
+
+.payline::before,
+.payline::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 0.75rem;
+  height: 1.25rem;
+  translate: 0 -50%;
+  background: var(--orange);
+}
+
+.payline::before {
+  left: 0.5rem;
+  clip-path: polygon(
+    0 0,
+    34% 0,
+    34% 20%,
+    67% 20%,
+    67% 40%,
+    100% 40%,
+    100% 60%,
+    67% 60%,
+    67% 80%,
+    34% 80%,
+    34% 100%,
+    0 100%
+  );
+}
+
+.payline::after {
+  right: 0.5rem;
+  clip-path: polygon(
+    100% 0,
+    66% 0,
+    66% 20%,
+    33% 20%,
+    33% 40%,
+    0 40%,
+    0 60%,
+    33% 60%,
+    33% 80%,
+    66% 80%,
+    66% 100%,
+    100% 100%
+  );
 }
 
 .reel {
@@ -260,20 +306,15 @@ body::after {
 .reel li {
   height: var(--row);
   line-height: var(--row);
-  padding-inline: 1rem;
+  padding-inline: 2rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.machine.is-idle .reel {
-  --index: 1;
-  color: var(--gray);
-}
-
-.machine.is-idle .reel li:nth-child(2) {
-  color: var(--white);
-  animation: blink 1s steps(1) infinite;
+.machine.is-winner .payline::before,
+.machine.is-winner .payline::after {
+  background: var(--green);
 }
 
 .machine.is-winner {
@@ -331,12 +372,6 @@ body::after {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
 }
 
 @keyframes dots {

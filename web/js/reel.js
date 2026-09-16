@@ -11,11 +11,16 @@ export function buildReel(films, winner) {
   return { items: [...fillers, winner, pickRandom(films)], winnerIndex: REEL_LENGTH };
 }
 
+function createItem(title) {
+  const item = document.createElement('li');
+  item.textContent = title;
+  return item;
+}
+
 export function spin(reelElement, { items, winnerIndex }, duration) {
   reelElement.replaceChildren(
     ...items.map((film, index) => {
-      const item = document.createElement('li');
-      item.textContent = film.title;
+      const item = createItem(film.title);
       item.classList.toggle('is-winner', index === winnerIndex);
       return item;
     }),
