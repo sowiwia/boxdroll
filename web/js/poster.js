@@ -1,5 +1,5 @@
 const BLOCK_SIZES = [40, 24, 16, 10, 6, 4, 2];
-const STEP_DURATION = 80;
+const REVEAL_DURATION = 800;
 
 const buffer = document.createElement('canvas');
 
@@ -38,7 +38,7 @@ export async function revealPoster(canvas, image, { animate, signal }) {
     canvas.classList.add('is-revealing');
     for (const blockSize of BLOCK_SIZES) {
       drawPixelated(canvas, image, blockSize * scale);
-      await wait(STEP_DURATION);
+      await wait(REVEAL_DURATION / BLOCK_SIZES.length);
       if (signal.aborted) {
         return;
       }
