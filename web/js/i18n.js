@@ -51,7 +51,7 @@ function readSavedLanguage() {
 
 function saveLanguage(language) {
   try {
-    saveLanguage(language);
+    localStorage.setItem(STORAGE_KEY, language);
   } catch {
     // Storage is blocked in some private modes; the choice just won't persist.
   }
