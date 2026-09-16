@@ -129,6 +129,35 @@ async function roll() {
   celebrate();
 }
 
+function flagInput(key) {
+  setStatus(key);
+  input.classList.add('is-invalid');
+  input.animate(
+    [{ translate: '0' }, { translate: '-6px' }, { translate: '6px' }, { translate: '0' }],
+    {
+      duration: 240,
+      easing: 'steps(4)',
+    },
+  );
+  input.focus();
+}
+
+function showError(code) {
+  const key = t(`error.${code}`) ? `error.${code}` : 'error.unknown';
+  if (code === 'invalid_url') {
+    flagInput(key);
+  } else {
+    setStatus(key);
+  }
+}
+
+function clearInputError() {
+  if (input.classList.contains('is-invalid')) {
+    input.classList.remove('is-invalid');
+    setStatus(null);
+  }
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
   if (isBusy) {
@@ -136,6 +165,11 @@ async function handleSubmit(event) {
   }
 
   const listUrl = input.value.trim();
+  if (!listUrl) {
+    flagInput('error.missing_url');
+    return;
+  }
+
   setBusy(true);
 
   try {
@@ -147,13 +181,13 @@ async function handleSubmit(event) {
     }
     setStatus(null);
     await roll();
+    setBusy(false);
   } catch (error) {
     loadedUrl = '';
     machine.hidden = true;
     result.hidden = true;
-    setStatus(t(`error.${error.code}`) ? `error.${error.code}` : 'error.unknown');
-  } finally {
     setBusy(false);
+    showError(error.code);
   }
 }
 
@@ -181,6 +215,7 @@ function renderLanguage() {
 }
 
 form.addEventListener('submit', handleSubmit);
+input.addEventListener('input', clearInputError);
 rerollButton.addEventListener('click', handleReroll);
 languageToggle.addEventListener('click', () => {
   setLanguage(getNextLanguage());
