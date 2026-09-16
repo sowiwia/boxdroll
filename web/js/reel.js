@@ -55,7 +55,7 @@ export function spin(reelElement, { items, winnerIndex }, duration) {
 
     function frame(now) {
       const progress = Math.min((now - start) / duration, 1);
-      moveTo(Math.round(easeOutCubic(progress) * winnerIndex));
+      moveTo(easeOutCubic(progress) * winnerIndex);
 
       if (progress < 1) {
         requestAnimationFrame(frame);

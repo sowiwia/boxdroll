@@ -302,6 +302,7 @@ body::after {
   padding: 0;
   list-style: none;
   transform: translateY(calc((1 - var(--index)) * var(--row)));
+  will-change: transform;
 }
 
 .reel li {
