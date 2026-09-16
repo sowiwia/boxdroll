@@ -32,7 +32,7 @@ function createItem(title) {
   return item;
 }
 
-export function spin(reelElement, { items, winnerIndex }, duration) {
+export function spin(reelElement, { items, winnerIndex }, duration, onStep = () => {}) {
   reelElement.replaceChildren(
     ...items.map((film, index) => {
       const item = createItem(film.label);
@@ -48,10 +48,17 @@ export function spin(reelElement, { items, winnerIndex }, duration) {
 
   return new Promise((resolve) => {
     const start = performance.now();
+    let row = 0;
 
     function frame(now) {
       const progress = Math.min((now - start) / duration, 1);
-      moveTo(easeOutCubic(progress) * winnerIndex);
+      const position = easeOutCubic(progress) * winnerIndex;
+      moveTo(position);
+
+      if (Math.floor(position) > row) {
+        row = Math.floor(position);
+        onStep(progress);
+      }
 
       if (progress < 1) {
         requestAnimationFrame(frame);

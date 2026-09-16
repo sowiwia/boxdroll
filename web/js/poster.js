@@ -33,7 +33,7 @@ function drawSharp(canvas, image) {
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
 }
 
-export async function revealPoster(canvas, image, { signal }) {
+export async function revealPoster(canvas, image, { signal, onStep = () => {} }) {
   const scale = window.devicePixelRatio || 1;
   canvas.width = Math.round(canvas.clientWidth * scale);
   canvas.height = Math.round(canvas.clientHeight * scale);
@@ -41,6 +41,7 @@ export async function revealPoster(canvas, image, { signal }) {
   const start = await nextFrame();
   for (const [step, blockSize] of BLOCK_SIZES.entries()) {
     drawPixelated(canvas, image, blockSize * scale);
+    onStep(step, BLOCK_SIZES.length);
     let now = await nextFrame();
     while (now - start < (step + 1) * STEP_DURATION) {
       if (signal.aborted) {
@@ -51,4 +52,5 @@ export async function revealPoster(canvas, image, { signal }) {
   }
 
   drawSharp(canvas, image);
+  onStep(BLOCK_SIZES.length, BLOCK_SIZES.length);
 }

@@ -425,6 +425,28 @@ body::after {
   z-index: 6;
 }
 
+.sound-toggle {
+  display: flex;
+}
+
+.sound-toggle svg {
+  fill: currentColor;
+}
+
+.sound-toggle[aria-pressed='true'] {
+  color: var(--white);
+}
+
+.sound-toggle[aria-pressed='true'] .sound-muted,
+.sound-toggle[aria-pressed='false'] .sound-waves {
+  display: none;
+}
+
+.sound-toggle:hover,
+.sound-toggle:focus-visible {
+  color: var(--blue);
+}
+
 .lang-toggle .is-active {
   color: var(--white);
 }

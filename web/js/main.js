@@ -4,6 +4,7 @@ import { getLanguage, languages, setLanguage, t, translatePage } from './i18n.js
 import { loadImage, revealPoster } from './poster.js';
 import { pickRandom } from './random.js';
 import { buildReel, labelFilms, spin } from './reel.js';
+import * as sound from './sound.js';
 
 const SPIN_DURATION = 3500;
 const LETTERBOXD_COLORS = ['#ff8000', '#00e054', '#40bcf4'];
@@ -22,6 +23,7 @@ const poster = document.querySelector('#poster');
 const posterCanvas = document.querySelector('#poster-canvas');
 const rerollButton = document.querySelector('#reroll');
 const languageToggle = document.querySelector('#lang-toggle');
+const soundToggle = document.querySelector('#sound-toggle');
 
 let list = null;
 let loadedUrl = '';
@@ -87,10 +89,11 @@ async function showPoster(film, imagePromise) {
   }
 
   poster.classList.remove('is-loading');
-  await revealPoster(posterCanvas, image, { signal });
+  await revealPoster(posterCanvas, image, { signal, onStep: sound.reveal });
 }
 
 function celebrate() {
+  sound.win();
   const { top, height } = machine.getBoundingClientRect();
   confetti({
     particleCount: 60,
@@ -119,7 +122,7 @@ async function roll() {
   document.body.classList.add('is-rolling');
   machine.scrollIntoView({ block: 'center', behavior: 'smooth' });
 
-  await spin(reel, buildReel(list.films, winner), SPIN_DURATION);
+  await spin(reel, buildReel(list.films, winner), SPIN_DURATION, sound.tick);
 
   document.body.classList.remove('is-rolling');
   machine.classList.add('is-winner');
@@ -130,6 +133,7 @@ async function roll() {
 }
 
 function flagInput(key) {
+  sound.error();
   setStatus(key);
   input.classList.add('is-invalid');
   input.animate(
@@ -147,6 +151,7 @@ function showError(code) {
   if (code === 'invalid_url') {
     flagInput(key);
   } else {
+    sound.error();
     setStatus(key);
   }
 }
@@ -171,6 +176,7 @@ async function handleSubmit(event) {
   }
 
   setBusy(true);
+  sound.lever();
 
   try {
     if (listUrl !== loadedUrl) {
@@ -193,6 +199,7 @@ async function handleSubmit(event) {
 
 async function handleReroll() {
   setBusy(true);
+  sound.lever();
   await roll();
   setBusy(false);
 }
@@ -212,14 +219,26 @@ function renderLanguage() {
     'aria-label',
     nextLanguage === 'es' ? 'Cambiar a español' : 'Switch to English',
   );
+  soundToggle.setAttribute('aria-label', t('sound'));
+}
+
+function renderSound() {
+  soundToggle.setAttribute('aria-pressed', String(sound.isSoundOn()));
 }
 
 form.addEventListener('submit', handleSubmit);
 input.addEventListener('input', clearInputError);
 rerollButton.addEventListener('click', handleReroll);
 languageToggle.addEventListener('click', () => {
+  sound.blip();
   setLanguage(getNextLanguage());
   renderLanguage();
 });
+soundToggle.addEventListener('click', () => {
+  sound.setSoundOn(!sound.isSoundOn());
+  sound.blip();
+  renderSound();
+});
 
 renderLanguage();
+renderSound();
