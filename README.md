@@ -1,58 +1,56 @@
-# boxdroll
+<h1 align="center">⋆˙⟡ boxdroll ⟡˙⋆</h1>
 
-Paste a Letterboxd list, spin the reel, watch whatever it lands on.
+<p align="center">
+paste a letterboxd list. let fate pick.
+</p>
 
-Existing randomizers only pick from your own watchlist. boxdroll works with any public list.
+<p align="center">
+<a href="https://sowiwia.github.io/boxdroll/"><img alt="live" src="https://img.shields.io/badge/▶_roll_now-000000.svg?style=flat"></a>
+<img alt="Cloudflare Workers" src="https://img.shields.io/badge/Workers-ff8000.svg?style=flat&logo=cloudflare&logoColor=000000">
+<img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-00e054.svg?style=flat&logo=javascript&logoColor=000000">
+<img alt="Hono" src="https://img.shields.io/badge/Hono-40bcf4.svg?style=flat&logo=hono&logoColor=000000">
+</p>
 
-## How it works
+<p align="center">
+<img width="600" src="docs/preview.gif" alt="boxdroll rolling a list"/>
+</p>
+
+<h2 align="center">🎞 what</h2>
+
+<p align="center">
+other randomizers only pick from your watchlist.<br/>
+boxdroll takes <b>any</b> public letterboxd list (or a <code>boxd.it</code> link), spins a pixel slot machine<br/>
+and lands on a movie. in english & español.<br/>
+⊹₊˚‧︵‿₊୨ᰔ୧₊‿︵‧˚₊⊹
+</p>
+
+<h2 align="center">⚙ how</h2>
 
 ```
-browser (GitHub Pages)  ──►  Cloudflare Worker  ──►  letterboxd.com
-     web/                        worker/
+web/  (github pages)  ──►  worker/  (cloudflare)  ──►  letterboxd.com
+ html · css · js           hono · htmlrewriter         every page of the list
 ```
 
-Browsers can't read Letterboxd pages directly (CORS), so a small Worker fetches the list, parses every page with `HTMLRewriter` and returns JSON:
+<p align="center">
+browsers can't read letterboxd directly (cors), so a tiny worker scrapes the list,<br/>
+caches it for an hour and hands back json. the frontend has no build step.
+</p>
 
-```
-GET /list?url=https://letterboxd.com/user/list/some-list/
-
-{ "name": "...", "url": "...", "films": [{ "title": "...", "year": 2022, "url": "..." }] }
-```
-
-Responses are cached for an hour. Short `boxd.it` links work too.
-
-The frontend is plain HTML, CSS and JavaScript modules with no build step.
-
-## Stack
-
-- **web**: HTML, CSS, JS modules, [canvas-confetti](https://github.com/catdad/canvas-confetti), [Monocraft](https://github.com/IdreesInc/Monocraft) font
-- **worker**: [Hono](https://hono.dev) on Cloudflare Workers, [entities](https://github.com/fb55/entities)
-- **tooling**: Vitest (running inside the Workers runtime), Prettier, GitHub Actions
-
-## Development
-
-Requires Node 24.
+<h2 align="center">⋆ run it ⋆</h2>
 
 ```sh
 npm install
-npm run dev:worker   # http://localhost:8787
-npm run dev:web      # http://localhost:3000
-```
-
-On localhost the site talks to the local Worker automatically.
-
-```sh
+npm run dev:worker   # localhost:8787
+npm run dev:web      # localhost:3000
 npm test
-npm run format
 ```
 
-## Deployment
+<h2 align="center">☕ support</h2>
 
-Pushing to `main` deploys automatically:
+<p align="center">
+if boxdroll picked something good, <a href="https://cafecito.app/sowiwia">buy me a cafecito</a> ♡
+</p>
 
-- `web/` changes → GitHub Pages
-- `worker/` changes → Cloudflare Workers (needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets)
-
-## License
-
-Code under MIT. Monocraft is licensed under the SIL Open Font License (`web/fonts/OFL.txt`).
+<p align="center">
+<sub>MIT · font: <a href="https://github.com/IdreesInc/Monocraft">Monocraft</a> (OFL)</sub>
+</p>
