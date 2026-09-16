@@ -1,0 +1,24 @@
+{
+  "name": "boxdroll",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:web": "serve web",
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "entities": "^8.1.0",
+    "hono": "^4.13.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "prettier": "^3.9.7",
+    "serve": "^14.2.6",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.132.0"
+  }
+}

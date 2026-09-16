@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>boxdroll</title>
+    <meta name="description" content="Paste a Letterboxd list and let fate pick your next movie." />
+    <meta property="og:title" content="boxdroll" />
+    <meta
+      property="og:description"
+      content="Paste a Letterboxd list and let fate pick your next movie."
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="fonts/Monocraft.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <div class="letterbox" aria-hidden="true"></div>
+
+    <main class="app">
+      <header class="header">
+        <h1 class="logo">boxdroll</h1>
+        <p class="tagline" data-i18n="tagline">paste a letterboxd list. let fate pick.</p>
+      </header>
+
+      <form class="roll-form" id="roll-form">
+        <label class="visually-hidden" for="list-url" data-i18n="inputLabel"
+          >Letterboxd list URL</label
+        >
+        <input
+          id="list-url"
+          name="url"
+          type="text"
+          inputmode="url"
+          autocomplete="off"
+          spellcheck="false"
+          required
+          placeholder="letterboxd.com/user/list/..."
+        />
+        <button class="button" type="submit" data-i18n="roll">roll</button>
+      </form>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <section class="machine" id="machine" hidden>
+        <ol class="reel" id="reel" aria-hidden="true"></ol>
+      </section>
+
+      <section class="result" id="result" aria-live="polite" hidden>
+        <p class="result-title" id="result-title"></p>
+        <p class="result-meta">
+          <span id="result-year"></span>
+          <span data-i18n="from">from</span>
+          <span id="result-list"></span>
+        </p>
+        <div class="result-actions">
+          <a
+            class="link"
+            id="result-link"
+            target="_blank"
+            rel="noopener"
+            data-i18n="viewOnLetterboxd"
+          >
+            view on letterboxd
+          </a>
+          <button class="button button-small" id="reroll" type="button" data-i18n="reroll">
+            reroll
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="corner">
+      <button class="link" id="lang-toggle" type="button"></button>
+      <a class="link" id="support-link" target="_blank" rel="noopener"></a>
+    </footer>
+  </body>
+</html>
