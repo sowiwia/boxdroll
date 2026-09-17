@@ -52,6 +52,17 @@ describe('parseListPage', () => {
       },
     ]);
   });
+
+  it('skips films that link outside letterboxd', async () => {
+    const html = `<li class="posteritem">
+      <div data-item-name="Bad (2020)" data-item-link="javascript:alert(1)"></div>
+    </li><li class="posteritem">
+      <div data-item-name="Worse (2020)" data-item-link="https://evil.com/film/worse/"></div>
+    </li>`;
+    const page = await parseListPage(new Response(html));
+
+    expect(page.films).toEqual([]);
+  });
 });
 
 describe('choosePages', () => {
@@ -74,6 +85,14 @@ describe('parsePosterUrl', () => {
       'https://a.ltrbxd.com/resized/film-poster/6/8/0/3/5/8/680358-x-0-600-0-900-crop.jpg?v=8ba5e11abf',
     );
   });
+
+  it.each(['javascript:alert(1)', 'http://a.ltrbxd.com/poster.jpg', 'https://evil.com/poster.jpg'])(
+    'ignores the untrusted poster url %s',
+    async (image) => {
+      const page = `<script type="application/ld+json">${JSON.stringify({ image })}</script>`;
+      expect(await parsePosterUrl(new Response(page))).toBeNull();
+    },
+  );
 
   it('returns null when the page has no poster', async () => {
     expect(await parsePosterUrl(new Response('<html></html>'))).toBeNull();

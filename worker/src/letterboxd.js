@@ -9,12 +9,13 @@ const REQUEST_HEADERS = {
 };
 
 const LIST_PATH = /^\/([\w-]+)\/list\/([\w-]+)/;
-const SHORT_LINK = /^(https?:\/\/)?boxd\.it\//i;
+const SHORT_LINK = /^(https?:\/\/)?boxd\.it\/([\w-]+)\/?([?#].*)?$/i;
 const NAME_WITH_YEAR = /^(.*) \((\d{4})\)$/;
 const PAGE_LINK = /\/page\/(\d+)\/?$/;
 const FILM_LINK = /^\/film\/([a-z0-9-]+)\/$/;
 const FILM_SLUG = /^[a-z0-9-]+$/;
 const CDATA_COMMENT = /\/\*.*?\*\//g;
+const POSTER_HOST = /^([\w-]+\.)*ltrbxd\.com$/;
 
 export class LetterboxdError extends Error {
   constructor(code, status) {
@@ -47,11 +48,12 @@ export function normalizeListUrl(input) {
 
 export async function resolveListUrl(input = '') {
   const trimmed = input.trim();
-  if (!SHORT_LINK.test(trimmed)) {
+  const shortLink = trimmed.match(SHORT_LINK);
+  if (!shortLink) {
     return normalizeListUrl(trimmed);
   }
 
-  const response = await fetch(toUrl(trimmed), { redirect: 'manual' });
+  const response = await fetch(`https://boxd.it/${shortLink[2]}`, { redirect: 'manual' });
   const location = response.headers.get('Location');
   if (!location) {
     throw new LetterboxdError('invalid_url', 400);
@@ -60,13 +62,19 @@ export async function resolveListUrl(input = '') {
 }
 
 function toFilm(rawName, link) {
+  const url = URL.parse(link ?? '', BASE_URL);
+  // The frontend turns this into a clickable link, so only ever hand back Letterboxd pages.
+  if (!rawName || url?.origin !== BASE_URL) {
+    return null;
+  }
+
   const name = decodeHTML(rawName);
   const match = name.match(NAME_WITH_YEAR);
   return {
     title: match ? match[1] : name,
     year: match ? Number(match[2]) : null,
     slug: link.match(FILM_LINK)?.[1] ?? null,
-    url: new URL(link, BASE_URL).href,
+    url: url.href,
   };
 }
 
@@ -81,9 +89,10 @@ export async function parseListPage(response) {
     })
     .on('li.posteritem [data-item-name]', {
       element(el) {
-        page.films.push(
-          toFilm(el.getAttribute('data-item-name'), el.getAttribute('data-item-link')),
-        );
+        const film = toFilm(el.getAttribute('data-item-name'), el.getAttribute('data-item-link'));
+        if (film) {
+          page.films.push(film);
+        }
       },
     })
     .on('.paginate-page a', {
@@ -152,11 +161,15 @@ export async function parsePosterUrl(response) {
     .transform(response)
     .arrayBuffer();
 
+  let image;
   try {
-    return JSON.parse(structuredData.replace(CDATA_COMMENT, '')).image ?? null;
+    image = JSON.parse(structuredData.replace(CDATA_COMMENT, '')).image;
   } catch {
     return null;
   }
+
+  const url = typeof image === 'string' ? URL.parse(image) : null;
+  return url?.protocol === 'https:' && POSTER_HOST.test(url.hostname) ? url.href : null;
 }
 
 export async function fetchPosterUrl(slug = '') {

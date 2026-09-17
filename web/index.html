@@ -3,6 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- GitHub Pages can't send headers, so the policy lives here. Confetti renders in a blob: worker. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' https://*.ltrbxd.com; connect-src https://boxdroll.boxdroll.workers.dev http://localhost:8787; worker-src blob:; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>boxdroll</title>
     <meta name="description" content="Paste a Letterboxd list and get a random movie to watch." />
     <meta property="og:title" content="boxdroll" />

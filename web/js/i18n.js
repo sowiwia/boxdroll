@@ -16,6 +16,7 @@ const messages = {
     'error.empty': 'that list is empty',
     'error.upstream': "letterboxd isn't answering. try again in a bit",
     'error.network': "couldn't connect. check your internet",
+    'error.rate_limited': 'too many rolls at once. wait a minute',
     'error.unknown': 'something went wrong. try again',
   },
   es: {
@@ -33,6 +34,7 @@ const messages = {
     'error.empty': 'esa lista está vacía',
     'error.upstream': 'letterboxd no responde. prueba en un rato',
     'error.network': 'no hay conexión. revisa tu internet',
+    'error.rate_limited': 'demasiadas tiradas seguidas. espera un minuto',
     'error.unknown': 'algo salió mal. prueba de nuevo',
   },
 };

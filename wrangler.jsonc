@@ -7,4 +7,9 @@
   "vars": {
     "ALLOWED_ORIGINS": "https://sowiwia.github.io,http://localhost:3000",
   },
+  "ratelimits": [
+    // Each /list request can fan out to 40 Letterboxd pages, so it gets the tighter limit.
+    { "name": "LIST_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } },
+    { "name": "POSTER_LIMITER", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } },
+  ],
 }
