@@ -2,6 +2,9 @@ import { decodeHTML } from 'entities';
 
 const BASE_URL = 'https://letterboxd.com';
 const MAX_PAGES = 40;
+// Letterboxd starts erroring and crawling when the whole fan-out lands at once.
+const CONCURRENCY = 6;
+const PAGE_TIMEOUT_MS = 8000;
 const REQUEST_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36',
@@ -126,12 +129,23 @@ export function choosePages(lastPage, limit = MAX_PAGES) {
 }
 
 async function fetchLetterboxd(url) {
-  const response = await fetch(url, { headers: REQUEST_HEADERS });
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: REQUEST_HEADERS,
+      signal: AbortSignal.timeout(PAGE_TIMEOUT_MS),
+    });
+  } catch {
+    console.error(`letterboxd timeout ${url}`);
+    throw new LetterboxdError('upstream', 502);
+  }
 
   if (response.status === 404) {
     throw new LetterboxdError('not_found', 404);
   }
   if (!response.ok) {
+    // Letterboxd's own status never reaches the client, and it is the only clue when a roll fails.
+    console.error(`letterboxd ${response.status} ${url}`);
     throw new LetterboxdError('upstream', 502);
   }
   return response;
@@ -142,13 +156,32 @@ async function fetchPage(listUrl, pageNumber) {
   return parseListPage(await fetchLetterboxd(url));
 }
 
+// A few pages at a time, and a page that fails is simply left out: one flaky page out of forty
+// used to sink the whole roll, and forty at once made Letterboxd flaky in the first place.
+async function fetchRemainingPages(listUrl, pageNumbers) {
+  const queue = [...pageNumbers];
+  const films = [];
+
+  const readers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+    for (let pageNumber = queue.pop(); pageNumber; pageNumber = queue.pop()) {
+      try {
+        films.push(...(await fetchPage(listUrl, pageNumber)).films);
+      } catch {
+        // The roll only needs enough films to spin, not every page.
+      }
+    }
+  });
+  await Promise.all(readers);
+
+  return films;
+}
+
 export async function fetchList(listUrl) {
   const firstPage = await fetchPage(listUrl, 1);
-  const otherPages = await Promise.all(
-    choosePages(firstPage.lastPage).map((pageNumber) => fetchPage(listUrl, pageNumber)),
-  );
-
-  const films = [firstPage, ...otherPages].flatMap((page) => page.films);
+  const films = [
+    ...firstPage.films,
+    ...(await fetchRemainingPages(listUrl, choosePages(firstPage.lastPage))),
+  ];
   if (films.length === 0) {
     throw new LetterboxdError('empty', 422);
   }

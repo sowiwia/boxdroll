@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LetterboxdError,
   choosePages,
+  fetchList,
   normalizeListUrl,
   parseListPage,
   parsePosterUrl,
@@ -111,6 +112,45 @@ describe('choosePages', () => {
     expect(pages).toHaveLength(39);
     expect(new Set(pages).size).toBe(39);
     expect(pages.every((page) => page >= 2 && page <= 1000)).toBe(true);
+  });
+});
+
+describe('fetchList', () => {
+  const page = (films, lastPage) =>
+    new Response(
+      `<meta property="og:title" content="Long list" />
+       ${films.map((film) => `<li class="griditem"><div data-item-name="${film} (2020)" data-item-link="/film/${film}/"></div></li>`).join('')}
+       <li class="paginate-page"><a href="/dave/watchlist/page/${lastPage}/">${lastPage}</a></li>`,
+    );
+
+  it('keeps the pages that loaded when letterboxd fails one of them', async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = async (url) => {
+      if (url.endsWith('/page/2/')) {
+        return new Response('nope', { status: 500 });
+      }
+      return url.endsWith('/page/3/') ? page(['third'], 3) : page(['first'], 3);
+    };
+
+    try {
+      const list = await fetchList('https://letterboxd.com/dave/watchlist/');
+      expect(list.films.map((film) => film.slug)).toEqual(['first', 'third']);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it('still fails when the first page does', async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = async () => new Response('nope', { status: 500 });
+
+    try {
+      await expect(fetchList('https://letterboxd.com/dave/watchlist/')).rejects.toThrow(
+        LetterboxdError,
+      );
+    } finally {
+      globalThis.fetch = original;
+    }
   });
 });
 
