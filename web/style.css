@@ -130,12 +130,14 @@ body::after {
   text-wrap: balance;
 }
 
-/* Quotes live in CSS so translatePage() can keep overwriting textContent. */
-.tagline span::before {
+/* Quotes live in CSS so translatePage() can keep overwriting textContent, and
+   only once it has: the span ships empty so the drawn line is the first thing
+   painted, instead of replacing a static one and shifting as it rewraps. */
+.tagline span:not(:empty)::before {
   content: '"';
 }
 
-.tagline span::after {
+.tagline span:not(:empty)::after {
   content: '"';
 }
 
