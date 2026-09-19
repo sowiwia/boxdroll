@@ -116,8 +116,27 @@ body::after {
 }
 
 .tagline {
-  margin: 0.75rem 0 0;
+  /* Two lines are reserved so a longer splash doesn't push the page down when
+     it is drawn, and the line is centred in them to sit halfway between the
+     logo and the form whether it takes one row or two. */
+  margin: 2rem 0 0;
+  min-height: 3rem;
+  display: grid;
+  align-content: center;
   color: var(--gray);
+}
+
+.tagline span {
+  text-wrap: balance;
+}
+
+/* Quotes live in CSS so translatePage() can keep overwriting textContent. */
+.tagline span::before {
+  content: '"';
+}
+
+.tagline span::after {
+  content: '"';
 }
 
 .roll-form {

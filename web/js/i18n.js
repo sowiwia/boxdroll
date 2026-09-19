@@ -1,8 +1,14 @@
+import { randomInt } from './random.js';
+import { taglines } from './taglines.js';
+
 const STORAGE_KEY = 'boxdroll:language';
+
+// One splash line per page load, shared by both languages.
+const taglineIndex = randomInt(taglines.en.length);
 
 const messages = {
   en: {
-    tagline: 'what are we watching tonight?',
+    tagline: taglines.en[taglineIndex],
     inputLabel: 'Letterboxd list URL',
     roll: 'roll',
     reroll: 'reroll',
@@ -20,7 +26,7 @@ const messages = {
     'error.unknown': 'something went wrong. try again',
   },
   es: {
-    tagline: '¿qué vemos hoy?',
+    tagline: taglines.es[taglineIndex],
     inputLabel: 'URL de la lista de Letterboxd',
     roll: 'tirar',
     reroll: 'otra',
