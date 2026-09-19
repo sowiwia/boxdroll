@@ -32,7 +32,7 @@
       </header>
 
       <form class="roll-form" id="roll-form">
-        <label class="visually-hidden" for="list-url" data-i18n="inputLabel"
+        <label class="visually-hidden" id="input-label" for="list-url" data-i18n="inputLabel"
           >Letterboxd list URL</label
         >
         <input
@@ -43,9 +43,16 @@
           autocomplete="off"
           spellcheck="false"
           placeholder="letterboxd.com/user/list/..."
+          data-i18n-placeholder="listPlaceholder"
         />
         <button class="button" type="submit" data-i18n="roll">roll</button>
       </form>
+
+      <p class="mode-switch">
+        <button class="link" id="mode-toggle" type="button" data-i18n="switchToWatchlist">
+          roll your watchlist?
+        </button>
+      </p>
 
       <p class="status" id="status" role="status" aria-live="polite"></p>
 

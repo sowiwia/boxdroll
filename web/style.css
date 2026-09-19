@@ -183,6 +183,15 @@ body::after {
   --line: var(--orange);
 }
 
+.mode-switch {
+  margin: -1.25rem 0 -0.75rem;
+}
+
+.mode-switch .link {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .button {
   padding: 0.75rem 1.5rem;
   border: 0;

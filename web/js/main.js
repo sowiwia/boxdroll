@@ -1,6 +1,7 @@
 import confetti from '../vendor/canvas-confetti.mjs';
 import { fetchList, fetchPosterUrl } from './api.js';
 import { getLanguage, languages, setLanguage, t, translatePage } from './i18n.js';
+import { parseUsername, watchlistUrl } from './letterboxd.js';
 import { loadImage, revealPoster } from './poster.js';
 import { pickRandom } from './random.js';
 import { buildReel, labelFilms, spin } from './reel.js';
@@ -11,6 +12,8 @@ const LETTERBOXD_COLORS = ['#ff8000', '#00e054', '#40bcf4'];
 
 const form = document.querySelector('#roll-form');
 const input = document.querySelector('#list-url');
+const inputLabel = document.querySelector('#input-label');
+const modeToggle = document.querySelector('#mode-toggle');
 const status = document.querySelector('#status');
 const machine = document.querySelector('#machine');
 const reel = document.querySelector('#reel');
@@ -26,6 +29,7 @@ const languageToggle = document.querySelector('#lang-toggle');
 const soundToggle = document.querySelector('#sound-toggle');
 
 let list = null;
+let mode = 'list';
 let loadedUrl = '';
 let isBusy = false;
 let posterReveal = new AbortController();
@@ -33,7 +37,7 @@ let posterReveal = new AbortController();
 function setBusy(busy) {
   isBusy = busy;
   document.body.classList.toggle('is-busy', busy);
-  for (const control of [...form.elements, rerollButton]) {
+  for (const control of [...form.elements, modeToggle, rerollButton]) {
     control.disabled = busy;
   }
 }
@@ -147,7 +151,7 @@ function flagInput(key) {
 }
 
 function showError(code) {
-  const key = t(`error.${code}`) ? `error.${code}` : 'error.unknown';
+  const key = t(`error.${code}`) ? modeKey(`error.${code}`) : 'error.unknown';
   if (code === 'invalid_url') {
     flagInput(key);
   } else {
@@ -169,10 +173,20 @@ async function handleSubmit(event) {
     return;
   }
 
-  const listUrl = input.value.trim();
-  if (!listUrl) {
-    flagInput('error.missing_url');
+  const typed = input.value.trim();
+  if (!typed) {
+    flagInput(isWatchlist() ? 'error.missing_username' : 'error.missing_url');
     return;
+  }
+
+  let listUrl = typed;
+  if (isWatchlist()) {
+    const username = parseUsername(typed);
+    if (!username) {
+      flagInput('error.invalid_username');
+      return;
+    }
+    listUrl = watchlistUrl(username);
   }
 
   setBusy(true);
@@ -180,7 +194,7 @@ async function handleSubmit(event) {
 
   try {
     if (listUrl !== loadedUrl) {
-      setStatus('loading', { loading: true });
+      setStatus(modeKey('loading'), { loading: true });
       const data = await fetchList(listUrl);
       list = { ...data, films: labelFilms(data.films) };
       loadedUrl = listUrl;
@@ -202,6 +216,35 @@ async function handleReroll() {
   sound.lever();
   await roll();
   setBusy(false);
+}
+
+function isWatchlist() {
+  return mode === 'watchlist';
+}
+
+// Watchlist copy only overrides the list wording where the two differ.
+function modeKey(key) {
+  const watchlistKey = `${key}.watchlist`;
+  return isWatchlist() && t(watchlistKey) ? watchlistKey : key;
+}
+
+// The input keeps its own label, placeholder and copy per mode; i18n does the wording.
+function renderMode() {
+  inputLabel.dataset.i18n = isWatchlist() ? 'usernameLabel' : 'inputLabel';
+  input.dataset.i18nPlaceholder = isWatchlist() ? 'usernamePlaceholder' : 'listPlaceholder';
+  input.inputMode = isWatchlist() ? 'text' : 'url';
+  modeToggle.dataset.i18n = isWatchlist() ? 'switchToList' : 'switchToWatchlist';
+  translatePage();
+}
+
+function toggleMode() {
+  sound.blip();
+  mode = isWatchlist() ? 'list' : 'watchlist';
+  input.value = '';
+  input.classList.remove('is-invalid');
+  setStatus(null);
+  renderMode();
+  input.focus();
 }
 
 function getNextLanguage() {
@@ -229,6 +272,7 @@ function renderSound() {
 form.addEventListener('submit', handleSubmit);
 input.addEventListener('input', clearInputError);
 rerollButton.addEventListener('click', handleReroll);
+modeToggle.addEventListener('click', toggleMode);
 languageToggle.addEventListener('click', () => {
   sound.blip();
   setLanguage(getNextLanguage());
@@ -240,5 +284,6 @@ soundToggle.addEventListener('click', () => {
   renderSound();
 });
 
+renderMode();
 renderLanguage();
 renderSound();

@@ -8,12 +8,14 @@ const REQUEST_HEADERS = {
   'Accept-Language': 'en',
 };
 
-const LIST_PATH = /^\/([\w-]+)\/list\/([\w-]+)/;
+// A watchlist is just another wall of posters, so it goes down the same pipe as a list.
+const SOURCE_PATH = /^\/([\w-]+)\/(?:list\/([\w-]+)|watchlist)(?:\/|$)/;
 const SHORT_LINK = /^(https?:\/\/)?boxd\.it\/([\w-]+)\/?([?#].*)?$/i;
 const NAME_WITH_YEAR = /^(.*) \((\d{4})\)$/;
 const PAGE_LINK = /\/page\/(\d+)\/?$/;
 const FILM_LINK = /^\/film\/([a-z0-9-]+)\/$/;
 const FILM_SLUG = /^[a-z0-9-]+$/;
+const FILM_ITEMS = ['li.posteritem [data-item-name]', 'li.griditem [data-item-name]'];
 const CDATA_COMMENT = /\/\*.*?\*\//g;
 const POSTER_HOST = /^([\w-]+\.)*ltrbxd\.com$/;
 
@@ -36,14 +38,14 @@ function toUrl(input) {
 export function normalizeListUrl(input) {
   const url = toUrl(input);
   const host = url.hostname.replace(/^www\./, '');
-  const match = url.pathname.match(LIST_PATH);
+  const match = url.pathname.match(SOURCE_PATH);
 
   if (host !== 'letterboxd.com' || !match) {
     throw new LetterboxdError('invalid_url', 400);
   }
 
   const [, user, slug] = match;
-  return `${BASE_URL}/${user}/list/${slug}/`;
+  return slug ? `${BASE_URL}/${user}/list/${slug}/` : `${BASE_URL}/${user}/watchlist/`;
 }
 
 export async function resolveListUrl(input = '') {
@@ -80,19 +82,19 @@ function toFilm(rawName, link) {
 
 export async function parseListPage(response) {
   const page = { name: '', films: [], lastPage: 1 };
+  const film = {
+    element(el) {
+      const parsed = toFilm(el.getAttribute('data-item-name'), el.getAttribute('data-item-link'));
+      if (parsed) {
+        page.films.push(parsed);
+      }
+    },
+  };
 
-  await new HTMLRewriter()
+  const rewriter = new HTMLRewriter()
     .on('meta[property="og:title"]', {
       element(el) {
         page.name = decodeHTML(el.getAttribute('content') ?? '');
-      },
-    })
-    .on('li.posteritem [data-item-name]', {
-      element(el) {
-        const film = toFilm(el.getAttribute('data-item-name'), el.getAttribute('data-item-link'));
-        if (film) {
-          page.films.push(film);
-        }
       },
     })
     .on('.paginate-page a', {
@@ -102,9 +104,14 @@ export async function parseListPage(response) {
           page.lastPage = Math.max(page.lastPage, Number(match[1]));
         }
       },
-    })
-    .transform(response)
-    .arrayBuffer();
+    });
+
+  // Lists draw their posters as .posteritem, watchlists as .griditem; the attributes match.
+  for (const selector of FILM_ITEMS) {
+    rewriter.on(selector, film);
+  }
+
+  await rewriter.transform(response).arrayBuffer();
 
   return page;
 }

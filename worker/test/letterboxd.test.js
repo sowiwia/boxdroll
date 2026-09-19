@@ -8,6 +8,7 @@ import {
 } from '../src/letterboxd.js';
 import filmFixture from './fixtures/film-page.html?raw';
 import fixture from './fixtures/list-page.html?raw';
+import watchlistFixture from './fixtures/watchlist-page.html?raw';
 
 describe('normalizeListUrl', () => {
   it.each([
@@ -21,10 +22,21 @@ describe('normalizeListUrl', () => {
   });
 
   it.each([
+    'https://letterboxd.com/dave/watchlist/',
+    'https://www.letterboxd.com/dave/watchlist',
+    'letterboxd.com/dave/watchlist/page/4/',
+    'https://letterboxd.com/dave/watchlist/by/rating/',
+  ])('normalizes the watchlist %s', (input) => {
+    expect(normalizeListUrl(input)).toBe('https://letterboxd.com/dave/watchlist/');
+  });
+
+  it.each([
     'not a url',
     'https://letterboxd.com/dave/',
-    'https://letterboxd.com/dave/watchlist/',
+    'https://letterboxd.com/dave/watchlisted/',
+    'https://letterboxd.com/dave/films/',
     'https://evil.com/dave/list/top-250/',
+    'https://evil.com/dave/watchlist/',
   ])('rejects %s', (input) => {
     expect(() => normalizeListUrl(input)).toThrow(LetterboxdError);
   });
@@ -62,6 +74,29 @@ describe('parseListPage', () => {
     const page = await parseListPage(new Response(html));
 
     expect(page.films).toEqual([]);
+  });
+});
+
+describe('parseListPage on a watchlist', () => {
+  it('reads the grid watchlists render instead of a poster list', async () => {
+    const page = await parseListPage(new Response(watchlistFixture));
+
+    expect(page.name).toBe('James (Schaffrillas)\u2019s Watchlist');
+    expect(page.lastPage).toBe(7);
+    expect(page.films).toEqual([
+      {
+        title: 'Sita Sings the Blues',
+        year: 2008,
+        slug: 'sita-sings-the-blues',
+        url: 'https://letterboxd.com/film/sita-sings-the-blues/',
+      },
+      {
+        title: 'Frankenstein',
+        year: 2022,
+        slug: 'frankenstein-2022',
+        url: 'https://letterboxd.com/film/frankenstein-2022/',
+      },
+    ]);
   });
 });
 
