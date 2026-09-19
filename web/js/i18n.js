@@ -1,10 +1,49 @@
-import { randomInt } from './random.js';
+import { shuffle } from './random.js';
 import { taglines } from './taglines.js';
 
 const STORAGE_KEY = 'boxdroll:language';
+const TAGLINE_KEY = 'boxdroll:taglines';
 
-// One splash line per page load, shared by both languages.
-const taglineIndex = randomInt(taglines.en.length);
+// One splash line per page load, shared by both languages. It is dealt from a
+// shuffled bag that outlives the page, so every line comes up once before any
+// of them comes round again, which pure chance would not give us.
+const taglineIndex = dealTagline();
+
+function readBag() {
+  try {
+    const bag = JSON.parse(localStorage.getItem(TAGLINE_KEY));
+    return {
+      last: bag.last,
+      queue: bag.queue.filter((index) => Number.isInteger(index) && index < taglines.en.length),
+    };
+  } catch {
+    return { last: null, queue: [] };
+  }
+}
+
+function saveBag(bag) {
+  try {
+    localStorage.setItem(TAGLINE_KEY, JSON.stringify(bag));
+  } catch {
+    // Storage is blocked in some private modes; the order just won't persist.
+  }
+}
+
+function dealTagline() {
+  const { last, queue } = readBag();
+
+  if (!queue.length) {
+    queue.push(...shuffle([...taglines.en.keys()]));
+    // A refilled bag shouldn't open with the line the last one closed with.
+    if (queue[0] === last && queue.length > 1) {
+      [queue[0], queue[1]] = [queue[1], queue[0]];
+    }
+  }
+
+  const index = queue.shift();
+  saveBag({ last: index, queue });
+  return index;
+}
 
 const messages = {
   en: {
