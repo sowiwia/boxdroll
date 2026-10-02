@@ -12,14 +12,14 @@
   },
   "dependencies": {
     "entities": "^8.1.0",
-    "hono": "^4.13.8"
+    "hono": "^4.13.11"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
-    "prettier": "^3.9.7",
+    "prettier": "^3.9.9",
     "serve": "^14.2.6",
-    "vitest": "^4.1.11",
-    "wrangler": "^4.132.0"
+    "vitest": "^5.0.2",
+    "wrangler": "^4.143.0"
   },
   "overrides": {
     "sharp": "^0.35.4"
